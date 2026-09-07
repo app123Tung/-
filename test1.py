@@ -1,39 +1,44 @@
+print("=== 程式開始執行 ===", flush=True)
+
 import requests
 from bs4 import BeautifulSoup
 import time
 
-# 要爬取的股票代碼列表
 stock = ["1101", "2330"]
-
-# 模擬一般瀏覽器 Header，防止被 Yahoo 伺服器阻擋
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 }
 
+token = "8719766312"
+chat_id = "8294056085"
+
 for stockid in stock:
+    print(f"開始抓取 {stockid}...", flush=True)
     url = f"https://tw.stock.yahoo.com/quote/{stockid}.TW"
     
-    r = requests.get(url, headers=headers)
-    soup = BeautifulSoup(r.text, 'html.parser')
-    
-    # 定位股價 HTML 標籤
-    price_tag = soup.find('span', class_=[
-        "Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c) C($c-trend-down)",
-        "Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c)",
-        "Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c) C($c-trend-up)"
-    ])
-    
-    if price_tag:
-        price = price_tag.getText()
-        message = f"股票 {stockid} 即時股價為 {price}"
+    try:
+        r = requests.get(url, headers=headers, timeout=10)
+        soup = BeautifulSoup(r.text, 'html.parser')
         
-        token = "8719766312"
-        chat_id = "8294056085"
+        price_tag = soup.find('span', class_=[
+            "Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c) C($c-trend-down)",
+            "Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c)",
+            "Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c) C($c-trend-up)"
+        ])
         
-        send_url = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={message}"
-        requests.get(send_url)
-    else:
-        print(f"無法取得 {stockid} 股價資訊")
+        if price_tag:
+            price = price_tag.getText()
+            message = f"股票 {stockid} 即時股價為 {price}"
+            send_url = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={message}"
+            res = requests.get(send_url, timeout=10)
+            print(f"[{stockid}] Telegram 回傳結果：{res.text}", flush=True)
+        else:
+            print(f"[{stockid}] 失敗：無法抓到 HTML 標籤！", flush=True)
+            
+    except Exception as e:
+        print(f"[{stockid}] 連線失敗或出錯：{e}", flush=True)
     
     time.sleep(3)
+
+print("=== 程式執行完畢 ===", flush=True)
 
