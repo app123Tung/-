@@ -23,4 +23,4 @@ jobs:
           pip install requests beautifulsoup4
 
       - name: Run Stock Crawler
-        run: python test1.py
+        run: test1.py
