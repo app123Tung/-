@@ -1,18 +1,19 @@
 name: get stock price
 
 on:
+  workflow_dispatch:
   schedule:
-    - cron: "*/5 1-6 * * 1-5" # 這裡就是設定自動執行的 Cron 語法
+    - cron: "*/5 1-6 * * 1-5"
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
@@ -23,4 +24,3 @@ jobs:
 
       - name: Run Stock Crawler
         run: python test1.py
-
